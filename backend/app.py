@@ -7,9 +7,10 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-# Caminhos corretos das bases
-BASE_CHECKLIST_PATH = r"C:\Users\rjuan\OneDrive - Mgcontecnica\Área de Trabalho\Projeto1\Consulta FTP\backend\data\basechecklist.xlsx"
-BASE_FTP_PATH = r"C:\Users\rjuan\OneDrive - Mgcontecnica\Área de Trabalho\Projeto1\Consulta FTP\backend\data\baseftp.xlsx"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+BASE_CHECKLIST_PATH = os.path.join(BASE_DIR, "data", "basechecklist.xlsx")
+BASE_FTP_PATH = os.path.join(BASE_DIR, "data", "baseftp.xlsx")
 
 # Carregar bases
 base_checklist = pd.read_excel(BASE_CHECKLIST_PATH)
