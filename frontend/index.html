@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FTP Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <!-- TELA INICIAL - GRUPOS -->
+    <div class="topbar">
+        <h2>Selecione um Grupo</h2>
+    </div>
+
+    <!-- Barra de pesquisa grupos -->
+    <div class="search-container">
+        <input type="text" id="searchGroups" placeholder="🔍 Pesquisar grupos..." class="search-input">
+    </div>
+
+    <div id="groupsContainer" class="cards-container"></div>
+
+    <!-- TELA DE CLIENTES -->
+    <div id="clientsView" style="display:none;">
+        <div class="topbar">
+            <button class="back-btn" id="backToGroups">⬅ Voltar</button>
+            <h2 id="groupName"></h2>
+        </div>
+
+        <!-- Barra de pesquisa clientes -->
+        <div class="search-container">
+            <input type="text" id="searchClients" placeholder="🔍 Pesquisar clientes..." class="search-input">
+        </div>
+
+        <div id="clientsContainer" class="cards-container"></div>
+    </div>
+
+    <!-- TELA DE DETALHES DO CLIENTE -->
+    <div id="clientView" style="display:none;">
+        <div class="topbar">
+            <button class="back-btn" id="backToClients">Salvar</button>
+            <h2 id="clientName"></h2>
+        </div>
+
+        <div class="view-container">
+            <div class="top-row">
+                <div class="left-column">
+                    <h2>Categorias</h2>
+                    <div id="categoryContainer"></div>
+                </div>
+
+                <div class="right-column">
+                    <h2>Documentos</h2>
+                    <div id="filesContainer"><em>Selecione uma categoria…</em></div>
+                </div>
+            </div>
+
+            <div id="detailsFrame" class="info-frame">
+                <p><em>Selecione a pendência e o documento</em></p>
+            </div>
+            <button id="linkButton" class="link-btn">Linkar</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

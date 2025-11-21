@@ -1,0 +1,862 @@
+/* ------------------------------------------------------------
+   🌙 GLOBAL — Tema escuro
+------------------------------------------------------------ */
+:root {
+    --bg-dark: #141414;
+    --bg-panel: #1d1d1d;
+    --bg-card: #222;
+    --bg-hover: #2a2a2a;
+    --text-primary: #ffffff;
+    --text-secondary: #c7c7c7;
+    --green-main: #00c46e;
+    --green-dark: #009e59;
+    --border-soft: #333;
+    --shadow-soft: 0 2px 6px rgba(0,0,0,0.35);
+    --radius: 10px;
+    --transition-fast: 0.18s ease;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: "Inter", Arial, sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ------------------------------------------------------------
+   🟩 TELA INICIAL — Grid de grupos (4 por linha)
+------------------------------------------------------------ */
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 cards por linha */
+    gap: 18px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Variáveis do tema cards */
+:root {
+    --verde: #1ce759;
+    --verde-brilhante: rgba(0, 255, 136, 0.35);
+    --fundo-card: #1b1f24;
+    --fundo-hover: #222831;
+}
+
+/* Card base - funciona para grupos e clientes */
+.card {
+    position: relative;
+    background: var(--fundo-card);
+    border-left: 6px solid var(--verde);
+    padding: 22px;
+    border-radius: 14px;
+    cursor: pointer;
+    min-height: 150px;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    box-shadow:
+        0 0 0 1px rgba(0,255,136,0.15),
+        0 3px 12px rgba(0,0,0,0.5);
+    transition: 
+        transform 0.25s ease,
+        box-shadow 0.35s ease,
+        background 0.25s ease;
+    overflow: hidden;
+}
+
+/* Camada de brilho degradê FIXA (não se move) */
+.card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(0, 255, 136, 0.08),
+        rgba(0, 255, 136, 0.18),
+        rgba(0, 255, 136, 0.08)
+    );
+    opacity: 0;                   /* invisível fora do hover */
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+}
+
+/* Efeito no hover */
+.card:hover {
+    transform: translateY(-5px) scale(1.02);
+    background: var(--fundo-hover);
+    box-shadow:
+        0 10px 40px rgba(0, 0, 0, 0.5),
+        0 0 15px rgba(0, 255, 136, 0.25),
+        0 0 60px var(--verde-brilhante);
+}
+
+/* Ativa o brilho degradê */
+.card:hover::before {
+    opacity: 1;
+}
+
+/* ------------------------------------------------------------
+   🎯 CABEÇALHO DAS TELAS
+------------------------------------------------------------ */
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--border-soft);
+    padding: 14px 22px;
+    box-shadow: var(--verde);
+    position: relative;
+}
+
+/* Nome do grupo/cliente - branco e centralizado */
+.topbar h2 {
+    margin: 5px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Botão voltar/fechar */
+.back-btn {
+    background: #4c85ff;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    margin-left: 0;
+    margin-right: auto;
+}
+
+.back-btn:hover {
+    background: #376ad6;
+}
+
+/* Espaço vazio para equilibrar o layout */
+.topbar::after {
+    content: "";
+    width: 80px;
+}
+
+/* ------------------------------------------------------------
+   🧩 TELA DE CLIENTES (segunda tela)
+------------------------------------------------------------ */
+#clientsView {
+    display: none;
+}
+
+#clientsView .topbar h2 {
+    color: var(--text-primary);
+}
+
+/* ------------------------------------------------------------
+   🧩 TELA DE DETALHES DO CLIENTE (terceira tela)
+------------------------------------------------------------ */
+#clientView {
+    display: none;
+}
+
+#clientView .topbar h2 {
+    color: var(--text-primary);
+}
+
+/* ------------------------------------------------------------
+   📁 FRAME DE CATEGORIAS - CARDS
+------------------------------------------------------------ */
+.left-column {
+    flex: 1;
+    height: 420px;
+    max-height: 420px;
+    min-height: 420px;
+    background: #111;
+    border: 1px solid rgba(255, 0, 0, 0.2);
+    border-radius: 10px;
+    box-shadow: 
+        0 0 10px rgba(0,255,136,0.1),
+        inset 0 0 8px rgba(0,255,136,0.15);
+    padding: 12px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,255,136,0.3) transparent;
+}
+
+/* Personalização do scroll para Webkit */
+.left-column::-webkit-scrollbar {
+    width: 6px;
+}
+
+.left-column::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 3px;
+}
+
+.left-column::-webkit-scrollbar-thumb {
+    background: rgba(0,255,136,0.3);
+    border-radius: 3px;
+    transition: background 0.3s ease;
+}
+
+.left-column::-webkit-scrollbar-thumb:hover {
+    background: rgba(0,255,136,0.5);
+}
+
+.left-column h2 {
+    margin: 0 0 15px 0;
+    font-size: 18px;
+    color: white;
+    border-bottom: 1px solid rgba(0,255,136,0.15);
+    padding-bottom: 8px;
+}
+
+/* CARDS DE CATEGORIA */
+.category-item {
+    padding: 16px;
+    margin-bottom: 10px;
+    background: #1a1a1a;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid rgba(0,255,136,0.1);
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.category-item:hover {
+    background: #1f1f1f;
+    border-color: rgba(0,255,136,0.35);
+    box-shadow: 0 0 8px rgba(0,255,136,0.4);
+    transform: translateY(-2px);
+}
+
+/* CATEGORIA SELECIONADA */
+.category-item.selected {
+    background: rgba(0,255,136,0.1);
+    border-color: rgba(0,255,136,0.5);
+    box-shadow: 
+        0 0 15px rgba(0,255,136,0.3),
+        inset 0 0 20px rgba(0,255,136,0.05);
+    transform: translateY(-1px);
+}
+
+.category-item.selected::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #00ff88, transparent);
+    border-radius: 2px;
+}
+
+/* ------------------------------------------------------------
+   📄 DESCRIÇÕES EM FORMA DE CARDS
+------------------------------------------------------------ */
+.desc-box {
+    background: rgba(255,255,255,0.03);
+    border-left: 3px solid #00ff88;
+    margin-left: 10px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    padding: 12px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* CARDS PARA DESCRIÇÕES */
+.description-item {
+    position: relative;
+    padding: 12px 16px;
+    background: #1e1e1e;
+    color: #f1f1f1;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    transition: all 0.25s ease;
+    margin-bottom: 6px;
+}
+
+.description-item:hover {
+    transform: translateX(+3px);
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.18);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* DESCRIÇÃO SELECIONADA */
+.description-item.selected {
+    background: rgba(0,255,136,0.08);
+    border-color: rgba(0,255,136,0.4);
+    box-shadow: 
+        0 0 12px rgba(0,255,136,0.25),
+        inset 0 0 15px rgba(0,255,136,0.03);
+    transform: translateY(-1px);
+}
+
+.description-item.selected::after {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    color: #00ff88;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* ------------------------------------------------------------
+   📂 FRAME DE DOCUMENTOS
+------------------------------------------------------------ */
+.right-column {
+    flex: 1;
+    height: 420px;
+    max-height: 420px;
+    min-height: 420px;
+    background: #111;
+    border: 1px solid rgba(0,255,136,0.20);
+    border-left: 4px solid var(--green-main, #00ff88);
+    border-radius: 10px;
+    box-shadow: 
+        0 0 10px rgba(0,255,136,0.1),
+        inset 0 0 8px rgba(0,255,136,0.15);
+    padding: 12px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,255,136,0.3) transparent;
+}
+
+.right-column::-webkit-scrollbar {
+    width: 6px;
+}
+
+.right-column::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 3px;
+}
+
+.right-column::-webkit-scrollbar-thumb {
+    background: rgba(0,255,136,0.3);
+    border-radius: 3px;
+    transition: background 0.3s ease;
+}
+
+.right-column::-webkit-scrollbar-thumb:hover {
+    background: rgba(0,255,136,0.5);
+}
+
+.right-column h2 {
+    margin: 0 0 15px 0;
+    font-size: 18px;
+    color: #ffffff;
+    border-bottom: 1px solid rgba(0,255,136,0.15);
+    padding-bottom: 8px;
+}
+
+/* CARDS PARA ARQUIVOS */
+.file-card {
+    position: relative;
+    padding: 14px;
+    background: #1e1e1e;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    transition: all 0.25s ease;
+}
+
+.file-card:hover {
+    transform: translateY(-3px);
+}
+
+/* DOCUMENTO SELECIONADO */
+.file-card.selected {
+    background: rgba(0,255,136,0.08);
+    border-color: rgba(0,255,136,0.4);
+    box-shadow: 
+        0 0 12px rgba(0,255,136,0.25),
+        inset 0 0 15px rgba(0,255,136,0.03);
+    transform: translateY(-1px);
+}
+
+.file-card.selected::after {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    color: #00ff88;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.file-card > div:first-child {
+    font-weight: 500;
+    margin-bottom: 8px;
+    cursor: pointer;
+    color: var(--green-dark);
+    padding-right: 20px;
+}
+
+.file-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+/* ------------------------------------------------------------
+   🧪 FRAME DE DETALHES
+------------------------------------------------------------ */
+.info-frame {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 14px;
+    min-height: 120px;
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid var(--green-dark);
+    box-shadow: var(--shadow-soft);
+}
+
+.detail-desc,
+.detail-file {
+    margin-bottom: 12px;
+    color: var(--text-secondary);
+}
+
+.detail-desc strong,
+.detail-file strong {
+    color: var(--green-main);
+}
+
+/* ------------------------------------------------------------
+   🟩 BOTÕES
+------------------------------------------------------------ */
+.link-btn,
+.btn-copy,
+.btn-open {
+    padding: 6px 12px;
+    border: 1px solid var(--green-dark);
+    border-radius: 6px;
+    background: var(--bg-card);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    font-size: 12px;
+}
+
+.link-btn:hover,
+.btn-copy:hover,
+.btn-open:hover {
+    background: var(--green-dark);
+    color: #fff;
+}
+
+.link-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+    align-self: flex-start;
+}
+
+/* ------------------------------------------------------------
+   📱 RESPONSIVIDADE
+------------------------------------------------------------ */
+@media (max-width: 1200px) {
+    .cards-container {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .cards-container {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 15px;
+        gap: 12px;
+    }
+    
+    .top-row {
+        flex-direction: column;
+    }
+    
+    .left-column,
+    .right-column {
+        height: 300px;
+        max-height: 300px;
+        min-height: 300px;
+    }
+    
+    .topbar h2 {
+        font-size: 16px;
+        max-width: 200px;
+    }
+}
+
+@media (max-width: 480px) {
+    .cards-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ------------------------------------------------------------
+   🧩 ÁREA INTERNA (categorias + arquivos + detalhes)
+------------------------------------------------------------ */
+.view-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 18px;
+    gap: 18px;
+}
+
+/* FRAMES LADO A LADO - CORREÇÃO */
+.top-row {
+    flex: 1;
+    display: flex;
+    gap: 18px;
+    min-height: 450px; /* Altura mínima para manter proporção */
+}
+
+/* FRAME DE CATEGORIAS - LADO ESQUERDO */
+.left-column {
+    flex: 1;
+    height: auto;
+    min-height: 420px;
+    background: #111;
+    border: 1px solid rgba(0,255,136,0.20);
+    border-radius: 10px;
+    box-shadow: 
+        0 0 10px rgba(0,255,136,0.1),
+        inset 0 0 8px rgba(0,255,136,0.15);
+    padding: 12px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,255,136,0.3) transparent;
+}
+
+/* FRAME DE DOCUMENTOS - LADO DIREITO */
+.right-column {
+    flex: 1;
+    height: auto;
+    min-height: 420px;
+    background: #111;
+    border: 1px solid rgba(0,255,136,0.20);
+    border-radius: 10px;
+    box-shadow: 
+        0 0 10px rgba(0,255,136,0.1),
+        inset 0 0 8px rgba(0,255,136,0.15);
+    padding: 12px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,255,136,0.3) transparent;
+}
+
+/* Frame de detalhes abaixo */
+.info-frame {
+    background: var(--bg-panel);
+    border-radius: var(--radius);
+    padding: 14px;
+    min-height: 120px;
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid var(--border-soft);
+    box-shadow: var(--shadow-soft);
+}
+
+/* ------------------------------------------------------------
+   ✅ DESCRIÇÕES CONCLUÍDAS (COM ARQUIVO VINCULADO)
+------------------------------------------------------------ */
+.description-item.completed {
+    position: relative;
+    font-size: 13px;
+    opacity: 0.4;
+    background: rgba(0, 255, 136, 0.05);
+    border-color: rgba(0, 255, 136, 0.2);
+}
+
+.description-item.completed::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 8px;
+    right: 8px;
+    height: 2px;
+    background: linear-gradient(90deg, 
+        rgba(0, 255, 136, 0.8) 0%, 
+        rgba(0, 255, 136, 0.6) 50%, 
+        rgba(0, 255, 136, 0.8) 100%);
+    transform: translateY(-50%);
+    border-radius: 1px;
+    box-shadow: 0 0 8px rgba(0, 255, 136, 0.3);
+}
+
+.description-item.completed::after {
+    content: "✓";
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    color: #00ff88;
+    font-size: 11px;
+    text-shadow: 0 0 6px rgba(0, 255, 136, 0.5);
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Ajuste para quando estiver selecionada E concluída */
+.description-item.completed.selected {
+    background: rgba(0, 255, 136, 0.15);
+    border-color: rgba(0, 255, 136, 0.5);
+    opacity: 1;
+}
+
+.description-item.completed.selected::before {
+    background: linear-gradient(90deg, 
+        rgba(0, 255, 136, 1) 0%, 
+        rgba(0, 255, 136, 0.8) 50%, 
+        rgba(0, 255, 136, 1) 100%);
+    box-shadow: 0 0 12px rgba(0, 255, 136, 0.5);
+}
+
+/* ------------------------------------------------------------
+   🆔 CARDS DE CLIENTE COM ID
+------------------------------------------------------------ */
+.card-client {
+    position: relative;
+    background: var(--fundo-card);
+    border-left: 12px solid var(--green-dark);
+    padding: 22px;
+    border-radius: 14px;
+    cursor: pointer;
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    box-shadow:
+        0 0 0 1px rgba(0,255,136,0.15),
+        0 3px 12px rgba(0,0,0,0.5);
+    transition: 
+        transform 0.25s ease,
+        box-shadow 0.35s ease,
+        background 0.25s ease;
+    overflow: hidden;
+}
+
+.card-client .client-name {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+.card-client .client-id {
+    font-size: 16px;
+    color: var(--green-main);
+    background: rgba(0,255,136,0.1);
+    padding: 4px 8px;
+    align-items: left;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+/* ------------------------------------------------------------
+   ✅ CATEGORIA COMPLETA (TODAS DESCRIÇÕES OK)
+------------------------------------------------------------ */
+.category-item.completed {
+    background: rgba(0, 255, 136, 0.08);
+    border-color: rgba(0, 255, 136, 0.4);
+    opacity: 0.8;
+}
+
+.category-item.completed::before {
+    content: "✓";
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #00ff88;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.category-item.completed .category-text {
+    text-decoration: line-through;
+    text-decoration-color: #00ff88;
+    text-decoration-thickness: 2px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* ------------------------------------------------------------
+   💫 NOTIFICAÇÕES ESTILIZADAS
+------------------------------------------------------------ */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 16px 20px;
+    border-radius: 10px;
+    color: black;
+    font-weight: 500;
+    z-index: 1000;
+    transform: translateX(400px);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    max-width: 300px;
+}
+
+.notification.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.notification.success {
+    background: linear-gradient(135deg, rgba(0,255,136,0.9), rgba(0,200,100,0.9));
+    border-left: 4px solid #00ff88;
+}
+
+.notification.warning {
+    background: linear-gradient(135deg, rgba(0,255,136,0.9), rgba(0,200,100,0.9));
+    border-left: 4px solid #00ff88;
+}
+
+.notification.info {
+    background: linear-gradient(135deg, rgba(33,150,243,0.9), rgba(30,136,229,0.9));
+    border-left: 4px solid #2196f3;
+}
+
+.notification .notification-icon {
+    font-size: 18px;
+    margin-right: 8px;
+}
+
+/* Efeito de brilho nas notificações */
+.notification::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+}
+
+/* ------------------------------------------------------------
+   📱 RESPONSIVIDADE DAS NOTIFICAÇÕES
+------------------------------------------------------------ */
+@media (max-width: 768px) {
+    .notification {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+        transform: translateY(-100px);
+    }
+    
+    .notification.show {
+        transform: translateY(0);
+    }
+}
+
+/* ------------------------------------------------------------
+   🔍 BARRA DE PESQUISA - OCUPAR TODO ESPAÇO
+------------------------------------------------------------ */
+.search-container {
+    padding: 15px 20px;
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--border-soft);
+    display: flex;
+    justify-content: center;
+}
+
+.search-input {
+    width: 100%;
+    max-width: none; /* Removemos a max-width para ocupar todo o espaço */
+    padding: 12px 20px;
+    border: 3px solid rgba(0,255,136,0.3);
+    border-radius: 15px;
+    background: rgba(255,255,255,0.05);
+    color: var(--text-primary);
+    font-size: 18px;
+    outline: none;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+/* ------------------------------------------------------------
+   📂 AJUSTES NOS CARDS DE ARQUIVO
+------------------------------------------------------------ */
+.file-card {
+    position: relative;
+    padding: 14px;
+    background: #1e1e1e;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(0,255,136,0.3);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    transition: all 0.25s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.file-card:hover {
+    transform: translateX(+3px);
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.18);
+    box-shadow: 0 4px 12px rgba(3, 230, 78, 0.3);
+}
+
+.file-card > div:first-child {
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--text-primary);
+    padding-right: 20px;
+    flex: 1; /* Ocupa o espaço disponível */
+}
+
+.file-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 0; /* Removemos a margem top pois agora está na mesma linha */
+}
+
+/* ------------------------------------------------------------
+   🧪 FRAME DE DETALHES MAIS FINO
+------------------------------------------------------------ */
+.info-frame {
+    background: var(--bg-panel);
+    border-radius: var(--radius);
+    padding: 5px; /* Reduzimos um pouco o padding */
+    min-height: 100px; /* Reduzimos a altura mínima */
+    max-height: 100px; /* Reduzimos a altura máxima */
+    overflow-y: auto;
+    border: 1px solid var(--green-dark);
+    box-shadow: var(--shadow-soft);
+}
