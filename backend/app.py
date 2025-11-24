@@ -3,7 +3,7 @@ from flask_cors import CORS
 import psycopg2
 import os
 import urllib.parse as urlparse
-import pandas as pd
+
 
 app = Flask(__name__)
 CORS(app)
