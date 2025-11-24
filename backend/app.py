@@ -12,31 +12,42 @@ import pg8000
 import os
 
 def get_db_connection():
-    database_url = os.environ.get('DATABASE_URL')
-    
-    if database_url:
-        # Parse da URL do PostgreSQL
-        import urllib.parse as urlparse
-        url = urlparse.urlparse(database_url)
+    try:
+        database_url = os.environ.get('DATABASE_URL')
         
-        conn = pg8000.connect(
-            user=url.username,
-            password=url.password,
-            host=url.hostname,
-            port=url.port,
-            database=url.path[1:],
-            ssl_context=True
-        )
-        return conn
-    else:
-        # Desenvolvimento local
-        return pg8000.connect(
-            user="admin",
-            password="dMoMPubwqoeu2nDL9ufmnMsld8sMMXnu",
-            host="dpg-d4i49r8gjchc73dkstu0-a.oregon-postgres.render.com",
-            database="mensagens_db_txyh",
-            ssl_context=True
-        )
+        if database_url:
+            # Parse da URL do PostgreSQL
+            import urllib.parse as urlparse
+            url = urlparse.urlparse(database_url)
+            
+            print(f"🔗 Conectando: {url.hostname}:{url.port} database: {url.path[1:]}")
+            
+            conn = pg8000.connect(
+                user=url.username,
+                password=url.password,
+                host=url.hostname,
+                port=url.port,
+                database=url.path[1:],
+                ssl=True,  # Mude para True em vez de ssl_context
+                timeout=10
+            )
+            print("✅ Conectado ao PostgreSQL via pg8000!")
+            return conn
+        else:
+            # Fallback direto
+            return pg8000.connect(
+                user="admin",
+                password="dMoMPubwqoeu2nDL9ufmnMsld8sMMXnu",
+                host="dpg-d4i49r8gjchc73dkstu0-a.oregon-postgres.render.com",
+                port=5432,
+                database="mensagens_db_txyh",
+                ssl=True,
+                timeout=10
+            )
+            
+    except Exception as e:
+        print(f"❌ ERRO DE CONEXÃO: {e}")
+        return None
 
 # -------------------------------------------
 # ROTAS ATUALIZADAS (POSTGRESQL)
@@ -47,13 +58,23 @@ def home():
 
 @app.get("/grupos")
 def get_grupos():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT DISTINCT grupo FROM checklist WHERE grupo IS NOT NULL AND grupo != '' ORDER BY grupo")
-    grupos = [row[0] for row in cursor.fetchall()]
-    conn.close()
-    return jsonify(grupos)
-
+    try:
+        conn = get_db_connection()
+        if not conn:
+            return jsonify({"erro": "Não foi possível conectar ao banco"}), 500
+            
+        cursor = conn.cursor()
+        cursor.execute("SELECT DISTINCT grupo FROM checklist WHERE grupo IS NOT NULL AND grupo != '' ORDER BY grupo")
+        grupos = [row[0] for row in cursor.fetchall()]
+        conn.close()
+        
+        print(f"✅ /grupos: {len(grupos)} grupos encontrados")
+        return jsonify(grupos)
+        
+    except Exception as e:
+        print(f"❌ ERRO em /grupos: {e}")
+        return jsonify({"erro": str(e)}), 500
+        
 @app.get("/clientes/<grupo>")
 def get_clientes_por_grupo(grupo):
     conn = get_db_connection()
