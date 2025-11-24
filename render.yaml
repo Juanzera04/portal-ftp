@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: portal-ftp-backend
+    env: python
+    plan: free
+    region: oregon
+    branch: main
+    python:
+      version: "3.11.9"
+    buildCommand: cd backend && pip install -r requirements.txt
+    startCommand: cd backend && gunicorn app:app
+    envVars:
+      - key: DATABASE_URL
+        value: postgresql://admin:dMoMPubwqoeu2nDL9ufmnMsld8sMMXnu@dpg-d4i49r8gjchc73dkstu0-a.oregon-postgres.render.com/mensagens_db_txyh
+
+  - type: web
+    name: portal-ftp-frontend
+    env: static
+    plan: free
+    region: oregon
+    branch: main
+    buildCommand: ""
+    staticPublishPath: ./frontend
