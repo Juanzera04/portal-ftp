@@ -1,25 +1,41 @@
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
-import psycopg2
 import os
 import urllib.parse as urlparse
+import pg8000
 
 
 app = Flask(__name__)
 CORS(app)
 
-# -------------------------------------------
-# CONEXÃO COM POSTGRESQL
-# -------------------------------------------
+import pg8000
+import os
+
 def get_db_connection():
     database_url = os.environ.get('DATABASE_URL')
+    
     if database_url:
-        return psycopg2.connect(database_url, sslmode='require')
+        # Parse da URL do PostgreSQL
+        import urllib.parse as urlparse
+        url = urlparse.urlparse(database_url)
+        
+        conn = pg8000.connect(
+            user=url.username,
+            password=url.password,
+            host=url.hostname,
+            port=url.port,
+            database=url.path[1:],
+            ssl_context=True
+        )
+        return conn
     else:
-        # Para desenvolvimento local, use sua URL do Render
-        return psycopg2.connect(
-            "postgresql://admin:dMoMPubwqoeu2nDL9ufmnMsld8sMMXnu@dpg-d4i49r8gjchc73dkstu0-a.oregon-postgres.render.com/mensagens_db_txyh",
-            sslmode='require'
+        # Desenvolvimento local
+        return pg8000.connect(
+            user="admin",
+            password="dMoMPubwqoeu2nDL9ufmnMsld8sMMXnu",
+            host="dpg-d4i49r8gjchc73dkstu0-a.oregon-postgres.render.com",
+            database="mensagens_db_txyh",
+            ssl_context=True
         )
 
 # -------------------------------------------
