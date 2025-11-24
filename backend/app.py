@@ -1,40 +1,23 @@
+import psycopg2
+import os
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
-import os
-import urllib.parse as urlparse
-import pg8000
-
 
 app = Flask(__name__)
 CORS(app)
 
-import pg8000
-import os
-
 def get_db_connection():
-    try:
-        # URL direta - mais confiável
-        database_url = "postgresql://admin:dMoMPubwqoeu2nDL9ufmnMsld8sMMXnu@dpg-d4i49r8gjchc73dkstu0-a.oregon-postgres.render.com/mensagens_db_txyh"
-        
-        print(f"🔗 Tentando conectar: {database_url}")
-        
-        # Conexão DIRETA sem parse complexo
-        conn = pg8000.connect(
-            user="admin",
-            password="dMoMPubwqoeu2nDL9ufmnMsld8sMMXnu", 
-            host="dpg-d4i49r8gjchc73dkstu0-a.oregon-postgres.render.com",
-            port=5432,
-            database="mensagens_db_txyh",
-            ssl=True,
-            timeout=30
+    database_url = os.environ.get('DATABASE_URL')
+    
+    if database_url:
+        conn = psycopg2.connect(database_url, sslmode='require')
+    else:
+        # Fallback direto
+        conn = psycopg2.connect(
+            "postgresql://admin:dMoMPubwqoeu2nDL9ufmnMsld8sMMXnu@dpg-d4i49r8gjchc73dkstu0-a.oregon-postgres.render.com/mensagens_db_txyh",
+            sslmode='require'
         )
-        
-        print("✅ Conectado ao PostgreSQL via pg8000!")
-        return conn
-        
-    except Exception as e:
-        print(f"❌ ERRO DE CONEXÃO: {e}")
-        return None
+    return conn
 
 # -------------------------------------------
 # ROTAS ATUALIZADAS (POSTGRESQL)
