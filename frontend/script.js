@@ -1,5 +1,5 @@
 // endpoints base
-const API = "https://ftp-backend1.onrender.com/";
+const API = "https://ftp-backend1.onrender.com";
 window.pendingLinks = [];
 window.allGroups = [];
 window.allClients = [];
