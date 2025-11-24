@@ -13,38 +13,25 @@ import os
 
 def get_db_connection():
     try:
-        database_url = os.environ.get('DATABASE_URL')
+        # URL direta - mais confiável
+        database_url = "postgresql://admin:dMoMPubwqoeu2nDL9ufmnMsld8sMMXnu@dpg-d4i49r8gjchc73dkstu0-a.oregon-postgres.render.com/mensagens_db_txyh"
         
-        if database_url:
-            # Parse da URL do PostgreSQL
-            import urllib.parse as urlparse
-            url = urlparse.urlparse(database_url)
-            
-            print(f"🔗 Conectando: {url.hostname}:{url.port} database: {url.path[1:]}")
-            
-            conn = pg8000.connect(
-                user=url.username,
-                password=url.password,
-                host=url.hostname,
-                port=url.port,
-                database=url.path[1:],
-                ssl=True,  # Mude para True em vez de ssl_context
-                timeout=10
-            )
-            print("✅ Conectado ao PostgreSQL via pg8000!")
-            return conn
-        else:
-            # Fallback direto
-            return pg8000.connect(
-                user="admin",
-                password="dMoMPubwqoeu2nDL9ufmnMsld8sMMXnu",
-                host="dpg-d4i49r8gjchc73dkstu0-a.oregon-postgres.render.com",
-                port=5432,
-                database="mensagens_db_txyh",
-                ssl=True,
-                timeout=10
-            )
-            
+        print(f"🔗 Tentando conectar: {database_url}")
+        
+        # Conexão DIRETA sem parse complexo
+        conn = pg8000.connect(
+            user="admin",
+            password="dMoMPubwqoeu2nDL9ufmnMsld8sMMXnu", 
+            host="dpg-d4i49r8gjchc73dkstu0-a.oregon-postgres.render.com",
+            port=5432,
+            database="mensagens_db_txyh",
+            ssl=True,
+            timeout=30
+        )
+        
+        print("✅ Conectado ao PostgreSQL via pg8000!")
+        return conn
+        
     except Exception as e:
         print(f"❌ ERRO DE CONEXÃO: {e}")
         return None
@@ -271,6 +258,34 @@ def debug():
         
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
+
+@app.get("/test-conexao")
+def test_conexao():
+    try:
+        conn = get_db_connection()
+        if conn:
+            # Testar consulta simples
+            cursor = conn.cursor()
+            cursor.execute("SELECT 1 as test")
+            result = cursor.fetchone()
+            conn.close()
+            
+            return jsonify({
+                "status": "conexao_ok", 
+                "test_query": result[0],
+                "mensagem": "Conexão e consulta funcionando!"
+            })
+        else:
+            return jsonify({
+                "status": "conexao_falhou",
+                "mensagem": "Não foi possível estabelecer conexão"
+            }), 500
+            
+    except Exception as e:
+        return jsonify({
+            "status": "erro", 
+            "detalhes": str(e)
+        }), 500
 
 # -------------------------------------------
 # RUN
