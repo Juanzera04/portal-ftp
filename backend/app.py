@@ -1,166 +1,161 @@
-from flask import Flask, jsonify, request, send_file
-import pandas as pd
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
-import re
+import psycopg2
 import os
+import urllib.parse as urlparse
+import pandas as pd
 
 app = Flask(__name__)
 CORS(app)
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# -------------------------------------------
+# CONEXÃO COM POSTGRESQL
+# -------------------------------------------
+def get_db_connection():
+    database_url = os.environ.get('DATABASE_URL')
+    if database_url:
+        return psycopg2.connect(database_url, sslmode='require')
+    else:
+        # Para desenvolvimento local, use sua URL do Render
+        return psycopg2.connect(
+            "postgresql://admin:dMoMPubwqoeu2nDL9ufmnMsld8sMMXnu@dpg-d4i49r8gjchc73dkstu0-a.oregon-postgres.render.com/mensagens_db_txyh",
+            sslmode='require'
+        )
 
-BASE_CHECKLIST_PATH = os.path.join(BASE_DIR, "data", "basechecklist.xlsx")
-BASE_FTP_PATH = os.path.join(BASE_DIR, "data", "baseftp.xlsx")
+# -------------------------------------------
+# ROTAS ATUALIZADAS (POSTGRESQL)
+# -------------------------------------------
+@app.get("/")
+def home():
+    return jsonify({"status": "API rodando com PostgreSQL!", "database": "PostgreSQL"})
 
-# Carregar bases
-base_checklist = pd.read_excel(BASE_CHECKLIST_PATH)
-base_ftp = pd.read_excel(BASE_FTP_PATH)
-
-# Normalizar nomes das colunas para lowercase
-base_checklist.columns = [c.lower() for c in base_checklist.columns]
-base_ftp.columns = [c.lower() for c in base_ftp.columns]
-
-# -----------------------------
-# NORMALIZAR TEXTO
-# -----------------------------
-def norm_text(s):
-    if pd.isna(s):
-        return ""
-    s = str(s)
-    s = re.sub(r"\s+", " ", s)
-    return s.strip()
-
-# Normalizar colunas principais
-for col in base_checklist.columns:
-    base_checklist[col] = base_checklist[col].apply(norm_text)
-
-for col in base_ftp.columns:
-    base_ftp[col] = base_ftp[col].apply(norm_text)
-
-# -----------------------------
-# ROTAS CORRIGIDAS
-# -----------------------------
 @app.get("/grupos")
 def get_grupos():
-    if "grupo" not in base_checklist.columns:
-        return jsonify([])
-
-    grupos = sorted([
-        g for g in base_checklist["grupo"].dropna().unique().tolist()
-        if g and g.strip()
-    ])
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT DISTINCT grupo FROM checklist WHERE grupo IS NOT NULL AND grupo != '' ORDER BY grupo")
+    grupos = [row[0] for row in cursor.fetchall()]
+    conn.close()
     return jsonify(grupos)
 
 @app.get("/clientes/<grupo>")
 def get_clientes_por_grupo(grupo):
-    grupo = norm_text(grupo)
-
-    if "grupo" not in base_checklist.columns or "cliente" not in base_checklist.columns:
-        return jsonify([])
-
-    df = base_checklist[base_checklist["grupo"].str.lower() == grupo.lower()]
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT DISTINCT idcliente, cliente 
+        FROM checklist 
+        WHERE grupo = %s AND idcliente IS NOT NULL AND cliente IS NOT NULL 
+        AND idcliente != '' AND cliente != ''
+        ORDER BY cliente
+    """, (grupo,))
     
-    # Agrupar por ID e nome do cliente
-    clientes_info = []
-    for idcliente in df["idcliente"].dropna().unique():
-        cliente_df = df[df["idcliente"] == idcliente]
-        nome_cliente = cliente_df["cliente"].iloc[0] if not cliente_df.empty else ""
-        if nome_cliente:
-            clientes_info.append({
-                "id": str(idcliente),
-                "nome": nome_cliente
-            })
-    
-    # Ordenar por nome do cliente
-    clientes_info.sort(key=lambda x: x["nome"])
-    return jsonify(clientes_info)
+    clientes = [{"id": str(row[0]), "nome": row[1]} for row in cursor.fetchall()]
+    conn.close()
+    return jsonify(clientes)
 
 @app.get("/categorias/<cliente>")
 def get_categorias(cliente):
-    cliente = norm_text(cliente)
-
-    if "cliente" not in base_checklist.columns or "categoria" not in base_checklist.columns:
-        return jsonify([])
-
-    df = base_checklist[base_checklist["cliente"].str.lower() == cliente.lower()]
-    categorias = sorted([c for c in df["categoria"].dropna().unique().tolist() if c and c.strip()])
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT DISTINCT categoria 
+        FROM checklist 
+        WHERE cliente = %s AND categoria IS NOT NULL AND categoria != ''
+        ORDER BY categoria
+    """, (cliente,))
+    
+    categorias = [row[0] for row in cursor.fetchall()]
+    conn.close()
     return jsonify(categorias)
 
 @app.get("/descricoes/<cliente>/<categoria>")
 def get_descricoes(cliente, categoria):
-    cliente = norm_text(cliente)
-    categoria = norm_text(categoria)
-
-    if any(col not in base_checklist.columns for col in ["cliente", "categoria", "descricao"]):
-        return jsonify([])
-
-    df = base_checklist[
-        (base_checklist["cliente"].str.lower() == cliente.lower()) &
-        (base_checklist["categoria"].str.lower() == categoria.lower())
-    ]
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT DISTINCT descricao 
+        FROM checklist 
+        WHERE cliente = %s AND categoria = %s AND descricao IS NOT NULL AND descricao != ''
+        ORDER BY descricao
+    """, (cliente, categoria))
     
-    # Filtrar descrições não vazias
-    descricoes = sorted([d for d in df["descricao"].dropna().unique().tolist() if d and d.strip()])
+    descricoes = [row[0] for row in cursor.fetchall()]
+    conn.close()
     return jsonify(descricoes)
 
 @app.get("/vinculos/<cliente>/<categoria>")
 def get_vinculos(cliente, categoria):
-    cliente = norm_text(cliente)
-    categoria = norm_text(categoria)
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT descricao, arquivo 
+        FROM checklist 
+        WHERE cliente = %s AND categoria = %s 
+        AND descricao IS NOT NULL AND descricao != ''
+        ORDER BY descricao
+    """, (cliente, categoria))
 
-    if any(col not in base_checklist.columns for col in ["cliente", "categoria", "descricao", "arquivo"]):
-        return jsonify([])
-
-    df = base_checklist[
-        (base_checklist["cliente"].str.lower() == cliente.lower()) &
-        (base_checklist["categoria"].str.lower() == categoria.lower())
-    ]
-
-    vinculos = []
-    for _, row in df.iterrows():
-        vinculo = {
-            "descricao": row.get("descricao", ""),
-            "arquivo": row.get("arquivo", "")
-        }
-        vinculos.append(vinculo)
-
+    vinculos = [{"descricao": row[0], "arquivo": row[1] or ""} for row in cursor.fetchall()]
+    conn.close()
     return jsonify(vinculos)
 
 @app.get("/arquivos/<cliente>/<categoria>")
 def get_arquivos(cliente, categoria):
-    cliente = norm_text(cliente)
-    categoria = norm_text(categoria)
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT ftp, caminho 
+        FROM ftp 
+        WHERE cliente = %s AND categoria = %s 
+        AND ftp IS NOT NULL AND ftp != ''
+        ORDER BY ftp
+    """, (cliente, categoria))
 
-    if "cliente" not in base_ftp.columns or "categoria" not in base_ftp.columns:
-        return jsonify([])
+    arquivos = [{"ftp": row[0], "caminho": row[1] or ""} for row in cursor.fetchall()]
+    conn.close()
+    return jsonify(arquivos)
 
-    df = base_ftp[
-        (base_ftp["cliente"].str.lower() == cliente.lower()) &
-        (base_ftp["categoria"].str.lower() == categoria.lower())
-    ]
+# -------------------------------------------
+# ATUALIZAR LINKS (AGORA NO POSTGRESQL)
+# -------------------------------------------
+@app.post("/salvar_links")
+def salvar_links():
+    links = request.get_json()
+    if not isinstance(links, list):
+        return jsonify({"erro": "Formato inválido"}), 400
 
-    rows = []
-    for _, r in df.iterrows():
-        fila = {}
-        # Verificar quais colunas existem na base FTP
-        if "ftp" in base_ftp.columns:
-            fila["ftp"] = r.get("ftp", "") or ""
-        elif "nome" in base_ftp.columns:
-            fila["ftp"] = r.get("nome", "") or ""
-        else:
-            fila["ftp"] = "(sem nome)"
-            
-        if "caminho" in base_ftp.columns:
-            fila["caminho"] = r.get("caminho", "") or ""
-        else:
-            fila["caminho"] = ""
-        rows.append(fila)
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        for item in links:
+            cliente = item.get("cliente", "").strip()
+            categoria = item.get("categoria", "").strip()
+            descricao = item.get("descricao", "").strip()
+            arquivo = item.get("arquivo", "").strip()
 
-    return jsonify(rows)
+            if not cliente or not categoria or not descricao or not arquivo:
+                continue
 
-# -----------------------------
-# FUNÇÃO: ABRIR ARQUIVO
-# -----------------------------
+            cursor.execute("""
+                UPDATE checklist 
+                SET arquivo = %s 
+                WHERE cliente = %s AND categoria = %s AND descricao = %s
+            """, (arquivo, cliente, categoria, descricao))
+        
+        conn.commit()
+        return jsonify({"mensagem": "Links salvos com sucesso no PostgreSQL!"})
+    
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"erro": f"Erro ao salvar: {str(e)}"}), 500
+    finally:
+        conn.close()
+
+# -------------------------------------------
+# ABRIR ARQUIVO (mantido igual)
+# -------------------------------------------
 @app.post("/abrir_arquivo")
 def abrir_arquivo():
     data = request.get_json()
@@ -177,42 +172,34 @@ def abrir_arquivo():
     except Exception as e:
         return jsonify({"erro": f"Erro ao abrir arquivo: {str(e)}"}), 500
 
-@app.post("/salvar_links")
-def salvar_links():
-    global base_checklist
+# -------------------------------------------
+# HEALTH CHECK
+# -------------------------------------------
+@app.get("/health")
+def health_check():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM checklist")
+        total_checklist = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT COUNT(*) FROM ftp")
+        total_ftp = cursor.fetchone()[0]
+        
+        conn.close()
+        
+        return jsonify({
+            "status": "healthy", 
+            "database": "connected",
+            "total_checklist": total_checklist,
+            "total_ftp": total_ftp
+        })
+    except Exception as e:
+        return jsonify({"status": "unhealthy", "erro": str(e)}), 500
 
-    links = request.get_json()
-    if not isinstance(links, list):
-        return jsonify({"erro": "Formato inválido"}), 400
-
-    # garantir coluna "arquivo"
-    if "arquivo" not in base_checklist.columns:
-        base_checklist["arquivo"] = ""
-
-    for item in links:
-        cliente = norm_text(item.get("cliente"))
-        categoria = norm_text(item.get("categoria"))
-        descricao = norm_text(item.get("descricao"))
-        arquivo = norm_text(item.get("arquivo"))
-
-        if not cliente or not categoria or not descricao or not arquivo:
-            continue
-
-        mask = (
-            (base_checklist["cliente"].str.lower() == cliente.lower()) &
-            (base_checklist["categoria"].str.lower() == categoria.lower()) &
-            (base_checklist["descricao"].str.lower() == descricao.lower())
-        )
-
-        base_checklist.loc[mask, "arquivo"] = arquivo
-
-    # salvar após tudo
-    base_checklist.to_excel(BASE_CHECKLIST_PATH, index=False)
-
-    return jsonify({"mensagem": "Links salvos com sucesso!"})
-
-# -----------------------------
+# -------------------------------------------
 # RUN
-# -----------------------------
+# -------------------------------------------
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)
