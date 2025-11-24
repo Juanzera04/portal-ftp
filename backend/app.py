@@ -213,6 +213,44 @@ def health_check():
     except Exception as e:
         return jsonify({"status": "unhealthy", "erro": str(e)}), 500
 
+@app.get("/debug")
+def debug():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Verificar tabelas
+        cursor.execute("""
+            SELECT table_name 
+            FROM information_schema.tables 
+            WHERE table_schema = 'public'
+        """)
+        tabelas = [row[0] for row in cursor.fetchall()]
+        
+        # Verificar dados
+        cursor.execute("SELECT COUNT(*) FROM checklist")
+        total_checklist = cursor.fetchone()[0]
+        
+        cursor.execute("SELECT COUNT(*) FROM ftp") 
+        total_ftp = cursor.fetchone()[0]
+        
+        # Verificar alguns grupos
+        cursor.execute("SELECT grupo FROM checklist LIMIT 5")
+        grupos_sample = [row[0] for row in cursor.fetchall()]
+        
+        conn.close()
+        
+        return jsonify({
+            "tabelas": tabelas,
+            "total_checklist": total_checklist,
+            "total_ftp": total_ftp,
+            "grupos_sample": grupos_sample,
+            "status": "debug_completo"
+        })
+        
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 500
+
 # -------------------------------------------
 # RUN
 # -------------------------------------------
