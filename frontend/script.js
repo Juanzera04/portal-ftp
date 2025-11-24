@@ -1,5 +1,5 @@
 // endpoints base
-const BASE = "http://127.0.0.1:5000";
+const API = "https://portal-ftp-4-backend.onrender.com";
 window.pendingLinks = [];
 window.allGroups = [];
 window.allClients = [];
