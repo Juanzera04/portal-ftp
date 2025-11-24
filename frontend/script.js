@@ -42,7 +42,7 @@ function showNotification(message, type = 'info', duration = 3000) {
 
 // carregar lista de grupos e renderizar cards
 async function loadGroups() {
-    const res = await fetch(`${BASE}/grupos`);
+    const res = await fetch(`${API}/grupos`);
     const data = await res.json();
     
     window.allGroups = data;
@@ -92,7 +92,7 @@ async function openClientsView(grupo) {
 
     document.getElementById("groupName").textContent = grupo;
 
-    const res = await fetch(`${BASE}/clientes/${encodeURIComponent(grupo)}`);
+    const res = await fetch(`${API}/clientes/${encodeURIComponent(grupo)}`);
     const clientes = await res.json();
     
     window.allClients = clientes;
@@ -145,7 +145,7 @@ async function openClientView(cliente) {
 
     document.getElementById("clientName").textContent = cliente;
 
-    const res = await fetch(`${BASE}/categorias/${encodeURIComponent(cliente)}`);
+    const res = await fetch(`${API}/categorias/${encodeURIComponent(cliente)}`);
     const categorias = await res.json();
 
     const categoryContainer = document.getElementById("categoryContainer");
@@ -187,7 +187,7 @@ async function checkCategoriasCompletas(cliente, categorias) {
     
     for (const categoria of categorias) {
         try {
-            const resVinculos = await fetch(`${BASE}/vinculos/${encodeURIComponent(cliente)}/${encodeURIComponent(categoria)}`);
+            const resVinculos = await fetch(`${API}/vinculos/${encodeURIComponent(cliente)}/${encodeURIComponent(categoria)}`);
             if (resVinculos.ok) {
                 const vinculos = await resVinculos.json();
                 
@@ -230,11 +230,11 @@ async function toggleDescriptionsAndFiles(cliente, categoria, element) {
     }
 
     try {
-        const resDesc = await fetch(`${BASE}/descricoes/${encodeURIComponent(cliente)}/${encodeURIComponent(categoria)}`);
+        const resDesc = await fetch(`${API}/descricoes/${encodeURIComponent(cliente)}/${encodeURIComponent(categoria)}`);
         if (!resDesc.ok) throw new Error('Erro ao carregar descrições');
         const descricoes = await resDesc.json();
 
-        const resVinculos = await fetch(`${BASE}/vinculos/${encodeURIComponent(cliente)}/${encodeURIComponent(categoria)}`);
+        const resVinculos = await fetch(`${API}/vinculos/${encodeURIComponent(cliente)}/${encodeURIComponent(categoria)}`);
         let vinculos = [];
         if (resVinculos.ok) {
             vinculos = await resVinculos.json();
@@ -299,7 +299,7 @@ function selectDescription(desc, element) {
 // carrega arquivos no lado direito
 async function loadFilesForCategory(cliente, categoria) {
     try {
-        const res = await fetch(`${BASE}/arquivos/${encodeURIComponent(cliente)}/${encodeURIComponent(categoria)}`);
+        const res = await fetch(`${API}/arquivos/${encodeURIComponent(cliente)}/${encodeURIComponent(categoria)}`);
         if (!res.ok) throw new Error('Erro ao carregar arquivos');
         const arquivos = await res.json();
 
@@ -361,7 +361,7 @@ function selectFile(caminho, element, nomeArquivo) {
 
 // abrir arquivo
 async function abrirArquivo(caminho) {
-    const res = await fetch(`${BASE}/abrir_arquivo`, {
+    const res = await fetch(`${API}/abrir_arquivo`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ caminho })
@@ -460,7 +460,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
-            const res = await fetch(`${BASE}/salvar_links`, {
+            const res = await fetch(`${API}/salvar_links`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(window.pendingLinks)
